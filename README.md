@@ -16,5 +16,5 @@ delegates the decision to a configured authorization engine, and returns an allo
 - Support pluggable authorization engines such as OPA and Cerbos.
 - 
 
-[!NOTE]
-This project is at an early stage of development. Its APIs and configuration format may change.
+> [!NOTE]
+> This project is at an early stage of development. Its APIs and configuration format may change.
