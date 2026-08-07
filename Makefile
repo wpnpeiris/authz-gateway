@@ -11,7 +11,7 @@ $(BUILD_DIR):
 	@mkdir -p $(BUILD_DIR)
 
 build: $(BUILD_DIR)
-	go build -ldflags="-X main.Version=$(VERSION)" -o $(BUILD_DIR)/$(BINARY_NAME) ./cmd/authz-gateway
+	CGO_ENABLED=0 GOOS=linux go build -ldflags="-X main.Version=$(VERSION)" -o $(BUILD_DIR)/$(BINARY_NAME) ./cmd/authz-gateway
 
 coverage:
 	go test -race -covermode=atomic -coverprofile=$(COVERPROFILE) ./...

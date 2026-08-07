@@ -116,7 +116,7 @@ func mapRequest(
 	}
 
 	return authorization.Resource{
-		Kind: "anything",
+		Kind: "some_resource",
 		ID:   resourceID,
 	}, action, true
 }
