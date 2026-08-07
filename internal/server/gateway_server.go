@@ -20,9 +20,8 @@ type GatewayServer struct {
 	config Config
 }
 
-func (s *GatewayServer) Healthz(w http.ResponseWriter, r *http.Request) {
+func (s *GatewayServer) Healthz(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	return
 }
 
 type Config struct {
