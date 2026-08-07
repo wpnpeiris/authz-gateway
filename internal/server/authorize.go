@@ -8,43 +8,53 @@ import (
 	"github.com/wpnpeiris/authz-gateway/internal/logging"
 )
 
+func parseRoles(value string) []string {
+	if value == "" {
+		return nil
+	}
+
+	parts := strings.Split(value, ",")
+	roles := make([]string, 0, len(parts))
+
+	for _, role := range parts {
+		role = strings.TrimSpace(role)
+		if role != "" {
+			roles = append(roles, role)
+		}
+	}
+
+	return roles
+}
+
 func (s *GatewayServer) Authorize(w http.ResponseWriter, r *http.Request) {
 	principalID := r.Header.Get("X-Authz-Principal")
-	if principalID == "" {
-		http.Error(w, "missing principal", http.StatusUnauthorized)
+	resourceKind := r.Header.Get("X-Authz-Resource")
+	resourceID := r.Header.Get("X-Authz-Resource-ID")
+	action := r.Header.Get("X-Authz-Action")
+
+	if principalID == "" ||
+		resourceKind == "" ||
+		resourceID == "" ||
+		action == "" {
+
+		http.Error(w, "missing required authorization headers", http.StatusBadRequest)
 		return
 	}
 
-	method := r.Header.Get("X-Forwarded-Method")
-	path := r.Header.Get("X-Forwarded-Uri")
-
-	if method == "" || path == "" {
-		http.Error(
-			w,
-			"missing forwarded request information",
-			http.StatusBadRequest,
-		)
-		return
-	}
-
-	resource, action, ok := mapRequest(method, path)
-	if !ok {
-		http.Error(w, "request is not authorized", http.StatusForbidden)
-		return
-	}
-
-	decision, err := s.authorizer.Authorize(
-		r.Context(),
-		authorization.Request{
-			Principal: authorization.Principal{
-				ID:    principalID,
-				Roles: []string{"some_application"},
-			},
-			Resource: resource,
-			Action:   action,
+	roles := parseRoles(r.Header.Get("X-Authz-Roles"))
+	req := authorization.Request{
+		Principal: authorization.Principal{
+			ID:    principalID,
+			Roles: roles,
 		},
-	)
+		Resource: authorization.Resource{
+			Kind: resourceKind,
+			ID:   resourceID,
+		},
+		Action: action,
+	}
 
+	decision, err := s.authorizer.Authorize(r.Context(), req)
 	if err != nil {
 		logging.Error(
 			s.logger,
@@ -65,8 +75,8 @@ func (s *GatewayServer) Authorize(w http.ResponseWriter, r *http.Request) {
 			s.logger,
 			"msg", "Authorization denied",
 			"principal", principalID,
-			"resource_kind", resource.Kind,
-			"resource_id", resource.ID,
+			"resource_kind", resourceKind,
+			"resource_id", resourceID,
 			"action", action,
 		)
 
@@ -78,45 +88,10 @@ func (s *GatewayServer) Authorize(w http.ResponseWriter, r *http.Request) {
 		s.logger,
 		"msg", "Authorization allowed",
 		"principal", principalID,
-		"resource_kind", resource.Kind,
-		"resource_id", resource.ID,
+		"resource_kind", resourceKind,
+		"resource_id", resourceID,
 		"action", action,
 	)
 
 	w.WriteHeader(http.StatusOK)
-}
-
-func mapRequest(
-	method string,
-	path string,
-) (authorization.Resource, string, bool) {
-
-	const prefix = "/api/v1/some_resource/"
-
-	if !strings.HasPrefix(path, prefix) {
-		return authorization.Resource{}, "", false
-	}
-
-	resourceID := strings.TrimPrefix(path, prefix)
-	if resourceID == "" || strings.Contains(resourceID, "/") {
-		return authorization.Resource{}, "", false
-	}
-
-	var action string
-
-	switch method {
-	case http.MethodGet:
-		action = "read"
-	case http.MethodPut, http.MethodPatch:
-		action = "update"
-	case http.MethodDelete:
-		action = "delete"
-	default:
-		return authorization.Resource{}, "", false
-	}
-
-	return authorization.Resource{
-		Kind: "some_resource",
-		ID:   resourceID,
-	}, action, true
 }
