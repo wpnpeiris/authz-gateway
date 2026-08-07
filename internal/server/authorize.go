@@ -27,10 +27,10 @@ func parseRoles(value string) []string {
 }
 
 func (s *GatewayServer) Authorize(w http.ResponseWriter, r *http.Request) {
-	principalID := r.Header.Get("X-Authz-Principal")
-	resourceKind := r.Header.Get("X-Authz-Resource")
-	resourceID := r.Header.Get("X-Authz-Resource-ID")
-	action := r.Header.Get("X-Authz-Action")
+	principalID := r.Header.Get(authorization.HeaderPrincipal)
+	resourceKind := r.Header.Get(authorization.HeaderResource)
+	resourceID := r.Header.Get(authorization.HeaderResourceID)
+	action := r.Header.Get(authorization.HeaderAction)
 
 	if principalID == "" ||
 		resourceKind == "" ||
@@ -41,7 +41,7 @@ func (s *GatewayServer) Authorize(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	roles := parseRoles(r.Header.Get("X-Authz-Roles"))
+	roles := parseRoles(r.Header.Get(authorization.HeaderRoles))
 	req := authorization.Request{
 		Principal: authorization.Principal{
 			ID:    principalID,
