@@ -6,8 +6,7 @@ services:
     command:
       - "--cerbos.address=cerbos:3593"
     depends_on:
-      cerbos:
-        condition: service_healthy
+      - cerbos
     networks:
       - authz
 
