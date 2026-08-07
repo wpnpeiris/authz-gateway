@@ -14,3 +14,6 @@ principalPolicy:
 
         - action: read
           effect: EFFECT_DENY
+          condition:
+            match:
+              expr: '!(request.resource.id in ["res-1", "res-2"])'
