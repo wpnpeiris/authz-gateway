@@ -7,6 +7,7 @@ import (
 
 // Options holds all configuration options for the authz-gateway server.
 type Options struct {
+	CerbosAddress     string
 	ServerListen      string
 	LogFormat         string
 	LogLevel          string
@@ -30,6 +31,7 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 	fs.BoolVar(&showHelp, "h", false, "Print usage.")
 	fs.BoolVar(&showHelp, "help", false, "Print usage.")
 
+	fs.StringVar(&opts.CerbosAddress, "cerbos.address", "localhost:3593", "Cerbos server address.")
 	fs.StringVar(&opts.ServerListen, "listen", "0.0.0.0:8080", "Network host:port to listen on")
 	fs.StringVar(&opts.LogFormat, "log.format", "logfmt", "log output format: logfmt or json")
 	fs.StringVar(&opts.LogLevel, "log.level", "info", "log level: debug, info, warn, error")
