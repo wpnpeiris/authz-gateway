@@ -10,7 +10,4 @@ principalPolicy:
           effect: EFFECT_ALLOW
           condition:
             match:
-              expr: request.resource.id in [
-                "res-1",
-                "res-2"
-            ]
+              expr: 'request.resource.id in ["res-1", "res-2"]'
