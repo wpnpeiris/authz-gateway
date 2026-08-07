@@ -28,7 +28,7 @@ type Config struct {
 	// stdout; any other value uses logfmt to stderr.
 	Format string
 	// Level selects the minimum level to log. Valid values are
-	// "debug", "info", "warning", or "error".
+	// "debug", "info", "warn", or "error".
 	Level string
 }
 

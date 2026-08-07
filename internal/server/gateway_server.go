@@ -8,7 +8,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/wpnpeiris/authz-gateway/internal/logging"
 	"github.com/wpnpeiris/authz-gateway/internal/metrics"
-	"github.com/wpnpeiris/authz-gateway/internal/model"
 	"net/http"
 	"os"
 	"os/signal"
@@ -22,7 +21,7 @@ type GatewayServer struct {
 }
 
 func (s *GatewayServer) Healthz(w http.ResponseWriter, r *http.Request) {
-	model.WriteEmptyResponse(w, r, http.StatusOK)
+	w.WriteHeader(http.StatusOK)
 	return
 }
 
@@ -76,7 +75,7 @@ func (s *GatewayServer) Start() error {
 		WriteTimeout:      s.config.WriteTimeout,
 		IdleTimeout:       s.config.IdleTimeout,
 		ReadHeaderTimeout: s.config.ReadHeaderTimeout,
-		MaxHeaderBytes:    1 << 20, // 1 MB
+		MaxHeaderBytes:    128 << 10, // 128 KiB
 	}
 
 	// Channel to listen for errors from the HTTP server
