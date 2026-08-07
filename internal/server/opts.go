@@ -33,10 +33,10 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 	fs.StringVar(&opts.ServerListen, "listen", "0.0.0.0:8080", "Network host:port to listen on")
 	fs.StringVar(&opts.LogFormat, "log.format", "logfmt", "log output format: logfmt or json")
 	fs.StringVar(&opts.LogLevel, "log.level", "info", "log level: debug, info, warn, error")
-	fs.DurationVar(&opts.ReadTimeout, "http.read-timeout", 15*time.Minute, "HTTP server read timeout (for large uploads)")
-	fs.DurationVar(&opts.WriteTimeout, "http.write-timeout", 15*time.Minute, "HTTP server write timeout (for large downloads)")
-	fs.DurationVar(&opts.IdleTimeout, "http.idle-timeout", 120*time.Second, "HTTP server idle timeout")
-	fs.DurationVar(&opts.ReadHeaderTimeout, "http.read-header-timeout", 30*time.Second, "HTTP server read header timeout (slowloris protection)")
+	fs.DurationVar(&opts.ReadTimeout, "http.read-timeout", 10*time.Second, "HTTP server read timeout (for large uploads)")
+	fs.DurationVar(&opts.WriteTimeout, "http.write-timeout", 10*time.Second, "HTTP server write timeout (for large downloads)")
+	fs.DurationVar(&opts.IdleTimeout, "http.idle-timeout", 60*time.Second, "HTTP server idle timeout")
+	fs.DurationVar(&opts.ReadHeaderTimeout, "http.read-header-timeout", 5*time.Second, "HTTP server read header timeout (slowloris protection)")
 
 	if err := fs.Parse(args); err != nil {
 		return nil, err

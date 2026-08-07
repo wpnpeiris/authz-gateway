@@ -17,7 +17,7 @@ const (
 	// LevelInfo enables info and above.
 	LevelInfo = "info"
 	// LevelWarning enables warning and error only.
-	LevelWarning = "warning"
+	LevelWarning = "warn"
 	// LevelError enables error only.
 	LevelError = "error"
 )

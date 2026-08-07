@@ -19,10 +19,10 @@ Logging Options:
     --log.level <level>              Log level: debug, info, warn, error (default: info)
 
 HTTP Server Timeout Options:
-    --http.read-timeout <duration>   HTTP server read timeout (default: 15m)
-    --http.write-timeout <duration>  HTTP server write timeout (default: 15m)
-    --http.idle-timeout <duration>   HTTP server idle timeout (default: 120s)
-    --http.read-header-timeout <dur> HTTP server read header timeout (default: 30s)
+    --http.read-timeout <duration>   HTTP server read timeout (default: 10s)
+    --http.write-timeout <duration>  HTTP server write timeout (default: 10s)
+    --http.idle-timeout <duration>   HTTP server idle timeout (default: 60s)
+    --http.read-header-timeout <dur> HTTP server read header timeout (default: 5s)
 
 Common Options:
     -h, --help                       Show this message

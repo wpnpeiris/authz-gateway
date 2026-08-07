@@ -2,10 +2,13 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/go-kit/log"
 	"github.com/gorilla/mux"
 	"github.com/wpnpeiris/authz-gateway/internal/logging"
+	"github.com/wpnpeiris/authz-gateway/internal/metrics"
+	"github.com/wpnpeiris/authz-gateway/internal/model"
 	"net/http"
 	"os"
 	"os/signal"
@@ -16,6 +19,11 @@ import (
 type GatewayServer struct {
 	logger log.Logger
 	config Config
+}
+
+func (s *GatewayServer) Healthz(w http.ResponseWriter, r *http.Request) {
+	model.WriteEmptyResponse(w, r, http.StatusOK)
+	return
 }
 
 type Config struct {
@@ -55,6 +63,12 @@ func (s *GatewayServer) Start() error {
 	logging.Info(s.logger, "msg", fmt.Sprintf("Starting authz gateway server..."))
 	router := mux.NewRouter().SkipClean(true)
 
+	metrics.RegisterMetricEndpoint(router)
+
+	r := router.PathPrefix("/").Subrouter()
+	// Unauthenticated monitoring endpoints
+	r.Methods(http.MethodGet).Path("/healthz").HandlerFunc(s.Healthz)
+
 	srv := &http.Server{
 		Addr:              s.config.Endpoint,
 		Handler:           router,
@@ -71,12 +85,15 @@ func (s *GatewayServer) Start() error {
 	// Start HTTP server in a goroutine
 	go func() {
 		logging.Info(s.logger, "msg", fmt.Sprintf("Listening for HTTP requests on %s", s.config.Endpoint))
-		serverErrors <- srv.ListenAndServe()
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			serverErrors <- err
+		}
 	}()
 
 	// Channel to listen for interrupt signals
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
+	defer signal.Stop(shutdown)
 
 	// Block until we receive a signal or server error
 	select {
