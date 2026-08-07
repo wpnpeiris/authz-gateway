@@ -5,6 +5,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"net/http"
 )
 
 var (
@@ -26,13 +27,11 @@ func init() {
 // RegisterMetricEndpoint mounts the Prometheus handler for private registry at the standard metrics path
 // on the provided router.
 func RegisterMetricEndpoint(router *mux.Router) {
-	r := router.PathPrefix("/").Subrouter()
-	r.Handle(path, promhttp.HandlerFor(
-		registry,
-		promhttp.HandlerOpts{
+	router.Methods(http.MethodGet).
+		Path(path).
+		Handler(promhttp.HandlerFor(registry, promhttp.HandlerOpts{
 			EnableOpenMetrics: true,
-		},
-	))
+		}))
 }
 
 // RegisterPrometheusCollector registers a custom collector with registry.

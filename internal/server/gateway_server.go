@@ -33,12 +33,6 @@ type Config struct {
 	ReadHeaderTimeout time.Duration
 }
 
-// LogAndExit logs an error message to stderr and exits with status code 1.
-func LogAndExit(msg string) {
-	fmt.Fprintln(os.Stderr, msg)
-	os.Exit(1)
-}
-
 // NewGatewayServer constructs a server that ...
 func NewGatewayServer(opts *Options) (*GatewayServer, error) {
 	logger := logging.NewLogger(logging.Config{
@@ -63,10 +57,8 @@ func (s *GatewayServer) Start() error {
 	router := mux.NewRouter().SkipClean(true)
 
 	metrics.RegisterMetricEndpoint(router)
-
-	r := router.PathPrefix("/").Subrouter()
 	// Unauthenticated monitoring endpoints
-	r.Methods(http.MethodGet).Path("/healthz").HandlerFunc(s.Healthz)
+	router.Methods(http.MethodGet).Path("/healthz").HandlerFunc(s.Healthz)
 
 	srv := &http.Server{
 		Addr:              s.config.Endpoint,

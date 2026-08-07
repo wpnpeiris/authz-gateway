@@ -49,17 +49,22 @@ func main() {
 	fs.Usage = usage
 	opts, err := server.ConfigureOptions(fs, os.Args[1:], printVersionAndExit, fs.Usage)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		logAndExit(err.Error())
 	}
 
 	gateway, err := server.NewGatewayServer(opts)
 	if err != nil {
-		server.LogAndExit(err.Error())
+		logAndExit(err.Error())
 	}
 
 	err = gateway.Start()
 	if err != nil {
-		server.LogAndExit(err.Error())
+		logAndExit(err.Error())
 	}
+}
+
+// LogAndExit logs an error message to stderr and exits with status code 1.
+func logAndExit(msg string) {
+	fmt.Fprintln(os.Stderr, msg)
+	os.Exit(1)
 }
