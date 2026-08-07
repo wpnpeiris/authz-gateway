@@ -1,27 +1,28 @@
-package authorization
+package cerbos
 
 import (
 	"context"
 	"fmt"
 	cerbossdk "github.com/cerbos/cerbos-sdk-go/cerbos"
+	"github.com/wpnpeiris/authz-gateway/internal/authorization"
 )
 
-type CerbosAuthorizer struct {
+type Authorizer struct {
 	client *cerbossdk.GRPCClient
 }
 
-func New(address string) (*CerbosAuthorizer, error) {
+func New(address string) (*Authorizer, error) {
 	client, err := cerbossdk.New(address, cerbossdk.WithPlaintext())
 	if err != nil {
 		return nil, fmt.Errorf("create cerbos client: %w", err)
 	}
 
-	return &CerbosAuthorizer{
+	return &Authorizer{
 		client: client,
 	}, nil
 }
 
-func (a *CerbosAuthorizer) Authorize(ctx context.Context, req Request) (Decision, error) {
+func (a *Authorizer) Authorize(ctx context.Context, req authorization.Request) (authorization.Decision, error) {
 
 	principal := cerbossdk.NewPrincipal(
 		req.Principal.ID,
@@ -42,18 +43,25 @@ func (a *CerbosAuthorizer) Authorize(ctx context.Context, req Request) (Decision
 		batch,
 	)
 	if err != nil {
-		return Decision{}, fmt.Errorf(
+		return authorization.Decision{}, fmt.Errorf(
 			"cerbos authorization check: %w",
 			err,
 		)
 	}
 
-	allowed := result.IsAllowed(
+	resourceResult := result.GetResource(
 		req.Resource.ID,
-		req.Action,
+		cerbossdk.MatchResourceKind(req.Resource.Kind),
 	)
 
-	return Decision{
-		Allowed: allowed,
+	if err := resourceResult.Err(); err != nil {
+		return authorization.Decision{}, fmt.Errorf(
+			"get cerbos resource result: %w",
+			err,
+		)
+	}
+
+	return authorization.Decision{
+		Allowed: resourceResult.IsAllowed(req.Action),
 	}, nil
 }

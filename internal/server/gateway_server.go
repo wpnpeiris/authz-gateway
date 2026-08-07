@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/cerbos/cerbos-sdk-go/cerbos"
 	"github.com/wpnpeiris/authz-gateway/internal/authorization"
+	"github.com/wpnpeiris/authz-gateway/internal/authorization/cerbos"
 	"net/http"
 	"os"
 	"os/signal"
@@ -166,7 +166,10 @@ func NewGatewayServer(opts *Options) (*GatewayServer, error) {
 		ReadHeaderTimeout: opts.ReadHeaderTimeout,
 	}
 
-	authorizer, _ := authorization.New(opts.CerbosAddress)
+	authorizer, err := cerbos.New(opts.CerbosAddress)
+	if err != nil {
+		return nil, fmt.Errorf("initialize cerbos authorizer: %w", err)
+	}
 	return &GatewayServer{
 		logger:     logger,
 		config:     config,
