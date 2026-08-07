@@ -1,57 +1,16 @@
 package server
 
 import (
-	"net/http"
-	"strings"
-
 	"github.com/wpnpeiris/authz-gateway/internal/authorization"
 	"github.com/wpnpeiris/authz-gateway/internal/logging"
+	"net/http"
 )
 
-func parseRoles(value string) []string {
-	if value == "" {
-		return nil
-	}
-
-	parts := strings.Split(value, ",")
-	roles := make([]string, 0, len(parts))
-
-	for _, role := range parts {
-		role = strings.TrimSpace(role)
-		if role != "" {
-			roles = append(roles, role)
-		}
-	}
-
-	return roles
-}
-
 func (s *GatewayServer) Authorize(w http.ResponseWriter, r *http.Request) {
-	principalID := r.Header.Get(authorization.HeaderPrincipal)
-	resourceKind := r.Header.Get(authorization.HeaderResource)
-	resourceID := r.Header.Get(authorization.HeaderResourceID)
-	action := r.Header.Get(authorization.HeaderAction)
-
-	if principalID == "" ||
-		resourceKind == "" ||
-		resourceID == "" ||
-		action == "" {
-
-		http.Error(w, "missing required authorization headers", http.StatusBadRequest)
+	req, err := authorization.RequestFromHeaders(r.Header)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
-	}
-
-	roles := parseRoles(r.Header.Get(authorization.HeaderRoles))
-	req := authorization.Request{
-		Principal: authorization.Principal{
-			ID:    principalID,
-			Roles: roles,
-		},
-		Resource: authorization.Resource{
-			Kind: resourceKind,
-			ID:   resourceID,
-		},
-		Action: action,
 	}
 
 	decision, err := s.authorizer.Authorize(r.Context(), req)
@@ -74,10 +33,10 @@ func (s *GatewayServer) Authorize(w http.ResponseWriter, r *http.Request) {
 		logging.Info(
 			s.logger,
 			"msg", "Authorization denied",
-			"principal", principalID,
-			"resource_kind", resourceKind,
-			"resource_id", resourceID,
-			"action", action,
+			"principal", req.Principal.ID,
+			"resource_kind", req.Resource.Kind,
+			"resource_id", req.Resource.ID,
+			"action", req.Action,
 		)
 
 		w.WriteHeader(http.StatusForbidden)
@@ -87,10 +46,10 @@ func (s *GatewayServer) Authorize(w http.ResponseWriter, r *http.Request) {
 	logging.Info(
 		s.logger,
 		"msg", "Authorization allowed",
-		"principal", principalID,
-		"resource_kind", resourceKind,
-		"resource_id", resourceID,
-		"action", action,
+		"principal", req.Principal.ID,
+		"resource_kind", req.Resource.Kind,
+		"resource_id", req.Resource.ID,
+		"action", req.Action,
 	)
 
 	w.WriteHeader(http.StatusOK)
