@@ -13,13 +13,16 @@ import (
 	"github.com/go-kit/log"
 	"github.com/gorilla/mux"
 
+	"github.com/wpnpeiris/authz-gateway/internal/authorization"
+	"github.com/wpnpeiris/authz-gateway/internal/authorization/cerbos"
 	"github.com/wpnpeiris/authz-gateway/internal/logging"
 	"github.com/wpnpeiris/authz-gateway/internal/metrics"
 )
 
 type GatewayServer struct {
-	logger log.Logger
-	config Config
+	logger     log.Logger
+	config     Config
+	authorizer authorization.Authorizer
 }
 
 func (s *GatewayServer) Healthz(w http.ResponseWriter, _ *http.Request) {
@@ -49,7 +52,15 @@ func NewGatewayServer(opts *Options) (*GatewayServer, error) {
 		ReadHeaderTimeout: opts.ReadHeaderTimeout,
 	}
 
-	return &GatewayServer{logger, config}, nil
+	authorizer, err := cerbos.New(opts.CerbosAddress)
+	if err != nil {
+		return nil, fmt.Errorf("initialize cerbos authorizer: %w", err)
+	}
+	return &GatewayServer{
+		logger:     logger,
+		config:     config,
+		authorizer: authorizer,
+	}, nil
 }
 
 // Start starts the HTTP server with the provided configuration and blocks until it exits.
@@ -58,8 +69,8 @@ func (s *GatewayServer) Start() error {
 	router := mux.NewRouter().SkipClean(true)
 
 	metrics.RegisterMetricEndpoint(router)
-	// Unauthenticated monitoring endpoints
 	router.Methods(http.MethodGet).Path("/healthz").HandlerFunc(s.Healthz)
+	router.Methods(http.MethodGet).Path("/authorize").HandlerFunc(s.Authorize)
 
 	srv := &http.Server{
 		Addr:              s.config.Endpoint,

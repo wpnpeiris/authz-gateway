@@ -1,0 +1,40 @@
+services:
+  authz-gateway:
+    build: .
+    ports:
+      - "8080:8080"
+    command:
+      - "--cerbos.address=cerbos:3593"
+    depends_on:
+      - cerbos
+    networks:
+      - authz
+
+  cerbos:
+    image: ghcr.io/cerbos/cerbos:latest
+    command: server --config=/config/.cerbos.yaml
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "-q",
+          "-O",
+          "-",
+          "http://localhost:3592/_cerbos/health"
+        ]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+    ports:
+      - "3592:3592"
+      - "3593:3593"
+    volumes:
+      - ./cerbos/.cerbos.yaml:/config/.cerbos.yaml:ro
+      - ./cerbos/policies:/policies:ro
+    networks:
+      - authz
+
+networks:
+  authz:
+    driver: bridge
