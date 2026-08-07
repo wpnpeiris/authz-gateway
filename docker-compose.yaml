@@ -1,0 +1,19 @@
+services:
+  authz-gateway:
+    build: .
+    ports:
+      - "8080:8080"
+    command:
+      - "--cerbos.address=cerbos:3593"
+    depends_on:
+      - cerbos
+
+  cerbos:
+    image: ghcr.io/cerbos/cerbos:latest
+    command: server --config=/config/.cerbos.yaml
+    ports:
+      - "3592:3592"
+      - "3593:3593"
+    volumes:
+      - ./cerbos/.cerbos.yaml:/config/.cerbos.yaml:ro
+      - ./cerbos/policies:/policies:ro

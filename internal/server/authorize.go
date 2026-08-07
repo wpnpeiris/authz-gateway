@@ -38,7 +38,7 @@ func (s *GatewayServer) Authorize(w http.ResponseWriter, r *http.Request) {
 		authorization.Request{
 			Principal: authorization.Principal{
 				ID:    principalID,
-				Roles: []string{"customer_application"},
+				Roles: []string{"some_application"},
 			},
 			Resource: resource,
 			Action:   action,
@@ -91,7 +91,7 @@ func mapRequest(
 	path string,
 ) (authorization.Resource, string, bool) {
 
-	const prefix = "/api/v1/anything/"
+	const prefix = "/api/v1/some_resource/"
 
 	if !strings.HasPrefix(path, prefix) {
 		return authorization.Resource{}, "", false

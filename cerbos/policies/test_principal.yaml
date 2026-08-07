@@ -1,0 +1,16 @@
+apiVersion: api.cerbos.dev/v1
+principalPolicy:
+  principal: "some-owner"
+  version: default
+
+  rules:
+    - resource: some_resource
+      actions:
+        - action: read
+          effect: EFFECT_ALLOW
+          condition:
+            match:
+              expr: request.resource.id in [
+                "res-1",
+                "res-2"
+            ]
