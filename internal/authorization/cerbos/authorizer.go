@@ -3,6 +3,8 @@ package cerbos
 import (
 	"context"
 	"fmt"
+	"time"
+
 	cerbossdk "github.com/cerbos/cerbos-sdk-go/cerbos"
 	"github.com/wpnpeiris/authz-gateway/internal/authorization"
 )
@@ -12,7 +14,11 @@ type Authorizer struct {
 }
 
 func New(address string) (*Authorizer, error) {
-	client, err := cerbossdk.New(address, cerbossdk.WithPlaintext())
+	client, err := cerbossdk.New(
+		address,
+		cerbossdk.WithPlaintext(),
+		cerbossdk.WithConnectTimeout(3*time.Second),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("create cerbos client: %w", err)
 	}
