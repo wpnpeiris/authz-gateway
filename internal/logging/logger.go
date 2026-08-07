@@ -2,9 +2,10 @@ package logging
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
-	"os"
 )
 
 // Supported logger formats and levels.

@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/wpnpeiris/authz-gateway/internal/server"
-
 	"os"
+
+	"github.com/wpnpeiris/authz-gateway/internal/server"
 )
 
 var usageStr = `

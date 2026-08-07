@@ -2,13 +2,14 @@ package metrics
 
 import (
 	"context"
-	"github.com/gorilla/mux"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 func TestMetricsEndpoint(t *testing.T) {

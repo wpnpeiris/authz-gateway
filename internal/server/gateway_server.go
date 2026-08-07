@@ -4,15 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/go-kit/log"
-	"github.com/gorilla/mux"
-	"github.com/wpnpeiris/authz-gateway/internal/logging"
-	"github.com/wpnpeiris/authz-gateway/internal/metrics"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/go-kit/log"
+	"github.com/gorilla/mux"
+
+	"github.com/wpnpeiris/authz-gateway/internal/logging"
+	"github.com/wpnpeiris/authz-gateway/internal/metrics"
 )
 
 type GatewayServer struct {
@@ -32,7 +34,7 @@ type Config struct {
 	ReadHeaderTimeout time.Duration
 }
 
-// NewGatewayServer constructs a server that ...
+// NewGatewayServer creates a GatewayServer from the provided options.
 func NewGatewayServer(opts *Options) (*GatewayServer, error) {
 	logger := logging.NewLogger(logging.Config{
 		Format: opts.LogFormat,
@@ -52,7 +54,7 @@ func NewGatewayServer(opts *Options) (*GatewayServer, error) {
 
 // Start starts the HTTP server with the provided configuration and blocks until it exits.
 func (s *GatewayServer) Start() error {
-	logging.Info(s.logger, "msg", fmt.Sprintf("Starting authz gateway server..."))
+	logging.Info(s.logger, "msg", "Starting authz gateway server...")
 	router := mux.NewRouter().SkipClean(true)
 
 	metrics.RegisterMetricEndpoint(router)
