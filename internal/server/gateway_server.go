@@ -76,7 +76,7 @@ func (s *GatewayServer) Start() error {
 
 	// Start HTTP server in a goroutine
 	go func() {
-		logging.Info(s.logger, "msg", fmt.Sprintf("Listening for HTTP requests on %s", s.config.Endpoint))
+		logging.Info(s.logger, "msg", "Listening for HTTP requests", "address", s.config.Endpoint)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			serverErrors <- err
 		}
@@ -93,7 +93,7 @@ func (s *GatewayServer) Start() error {
 		return fmt.Errorf("server error: %w", err)
 
 	case sig := <-shutdown:
-		logging.Info(s.logger, "msg", fmt.Sprintf("Received signal %v, starting graceful shutdown", sig))
+		logging.Info(s.logger, "msg", "Received shutdown signal", "signal", sig)
 
 		// Give outstanding requests 30 seconds to complete
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
